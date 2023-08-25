@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: local_user
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: local_db
+    ports:
+      - "6737:5432"
+    volumes:
+      - local_server_db:/var/lib/postgresql/data
+    container_name: TradingBotDB
+
+volumes:
+  local_server_db:
