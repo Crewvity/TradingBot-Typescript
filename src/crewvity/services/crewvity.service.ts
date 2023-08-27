@@ -77,6 +77,16 @@ export class CrewvityService {
     return await this.makeRequest<PositionDto>(path, payload);
   }
 
+  async closeAllPositions() {
+    const positions = await this.getAllOpenPositions();
+    this.logger.log(`Found ${positions.length} open positions`);
+
+    for (const position of positions) {
+      await this.closePosition(position.id);
+    }
+    this.logger.log(`Closed all open positions`);
+  }
+
   private async makeRequest<T>(path: string, data?: unknown) {
     const headers = {
       'x-api-key': this.apiKey,

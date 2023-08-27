@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleDestroy } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Config, configSchema, getConfig } from 'src/config/configuration';
@@ -8,6 +8,7 @@ import { CommonsModule } from 'src/commons/commons.module';
 import { MarketDataModule } from 'src/market-data/market-data.module';
 import { CliCommandModule } from 'src/cli-command/cli-command.module';
 import { CrewvityModule } from './crewvity/crewvity.module';
+import { CrewvityService } from './crewvity/services/crewvity.service';
 
 @Module({
   imports: [
@@ -42,4 +43,15 @@ import { CrewvityModule } from './crewvity/crewvity.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements OnModuleDestroy {
+  constructor(private readonly crewvityService: CrewvityService) {}
+
+  async onModuleDestroy() {
+    /**
+     * close all open positions before shutting down the server
+     * if you are placing real trades with other exchanges, you should
+     * close their positions here as well.
+     */
+    await this.crewvityService.closeAllPositions();
+  }
+}

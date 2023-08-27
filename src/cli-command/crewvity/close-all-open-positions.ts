@@ -9,12 +9,6 @@ export class CrewvityCloseAllOpenPositionsCmd extends SafeCommandRunner {
   }
 
   async safeRun() {
-    const positions = await this.crewvityService.getAllOpenPositions();
-    console.log(`Found ${positions.length} open positions`);
-
-    for (const position of positions) {
-      await this.crewvityService.closePosition(position.id);
-    }
-    console.log(`Closed all open positions`);
+    await this.crewvityService.closeAllPositions();
   }
 }
