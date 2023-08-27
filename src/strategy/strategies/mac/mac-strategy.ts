@@ -1,17 +1,12 @@
 import Big from 'big.js';
-import {
-  CurrencyId,
-  PositionDirection,
-  PositionSize,
-} from 'src/commons/constants';
+import { CurrencyId, PositionSize } from 'src/commons/constants';
 import {
   Strategy,
   StrategyConstructorParams,
   StrategyParams,
-} from 'src/strategy/types/strategy';
+} from 'src/strategy/strategies/strategy';
 import { SMA } from 'trading-signals';
 import { takeRight } from 'lodash';
-import { Logger } from '@nestjs/common';
 
 export interface MacParams extends StrategyParams {
   shortPeriod: number;
@@ -19,8 +14,6 @@ export interface MacParams extends StrategyParams {
 }
 
 export class MacStrategy extends Strategy<MacParams> {
-  private readonly logger = new Logger(MacStrategy.name);
-
   private readonly shortSma: SMA;
   private readonly longSma: SMA;
   private prevShortSmaValue: Big | null = null;
@@ -85,59 +78,40 @@ export class MacStrategy extends Strategy<MacParams> {
 
   private handleUpwardCross() {
     if (!this.positionOpened) {
-      this.openPosition(true);
+      this.openPositionImpl(true);
     } else if (!this.isLongPosition) {
-      this.closePosition();
+      this.closePositionImpl();
     }
   }
 
   private handleDownwardCross() {
     if (!this.positionOpened) {
-      this.openPosition(false);
+      this.openPositionImpl(false);
     } else if (this.isLongPosition) {
-      this.closePosition();
+      this.closePositionImpl();
     }
   }
 
-  private async openPosition(isLong: boolean) {
-    try {
-      const { id: positionId } = await this.crewvityService.openPosition(
-        this.crewvityStrategyId,
-        isLong ? PositionDirection.Long : PositionDirection.Short,
-        this.params.assetIds[0],
-        PositionSize.Five,
-      );
+  private async openPositionImpl(isLong: boolean) {
+    const crewvityPositionId = await this.openPosition(
+      this.params.assetIds[0],
+      isLong,
+      PositionSize.Five,
+    );
 
-      this.crewvityPositionId = positionId;
+    if (crewvityPositionId) {
+      this.crewvityPositionId = crewvityPositionId;
       this.positionOpened = true;
       this.isLongPosition = isLong;
-
-      this.logger.log(
-        `Strategy[${this.strategyId}] :: Variant[${this.variantId}] :: opened position :: ID ${this.crewvityPositionId}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Strategy[${this.strategyId}] :: Variant[${this.variantId}] :: failed to open position`,
-        error,
-      );
     }
   }
 
-  private async closePosition() {
-    try {
-      const closingPositionId = this.crewvityPositionId!;
-      await this.crewvityService.closePosition(closingPositionId);
+  private async closePositionImpl() {
+    const closed = await this.closePosition(this.crewvityPositionId);
+
+    if (closed) {
       this.crewvityPositionId = null;
       this.positionOpened = false;
-
-      this.logger.log(
-        `Strategy[${this.strategyId}] :: Variant[${this.variantId}] :: closed position :: ID ${closingPositionId}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Strategy[${this.strategyId}] :: Variant[${this.variantId}] :: failed to close position`,
-        error,
-      );
     }
   }
 

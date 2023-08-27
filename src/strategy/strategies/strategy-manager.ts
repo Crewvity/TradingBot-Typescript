@@ -6,13 +6,11 @@ import {
 } from '@nestjs/common';
 import Big from 'big.js';
 import { OnEvent } from '@nestjs/event-emitter';
-import { MarketDataService } from 'src/market-data/services/market-data.service';
-import { CurrencyId, StrategyId } from 'src/commons/constants';
+import { CurrencyId, PositionSize, StrategyId } from 'src/commons/constants';
 import { Topic } from 'src/commons/events/topics';
-import { Strategy, StrategyParams } from 'src/strategy/types/strategy';
-import { Repository } from 'typeorm';
+import { Strategy, StrategyParams } from 'src/strategy/strategies/strategy';
 import { StrategyVariantEntity } from 'src/database/entities/strategy-variant.entity';
-import { CrewvityService } from 'src/crewvity/services/crewvity.service';
+import { StrategyManagerContext } from 'src/strategy/strategies/strategy-manager-context';
 
 @Injectable()
 export abstract class StrategyManager<
@@ -26,11 +24,7 @@ export abstract class StrategyManager<
 
   constructor(
     protected readonly strategyId: StrategyId,
-    protected readonly strategyVariantRepo: Repository<
-      StrategyVariantEntity<StrategyType['params']>
-    >,
-    protected readonly marketDataService: MarketDataService,
-    protected readonly crewvityService: CrewvityService,
+    protected readonly ctx: StrategyManagerContext<StrategyType>,
   ) {}
 
   // NestJS runs this when the server is fully initialised
@@ -40,7 +34,7 @@ export abstract class StrategyManager<
     this.logger.log(`Strategy[${this.strategyId}] :: initialising...`);
 
     try {
-      const variantEntities = await this.strategyVariantRepo.find({
+      const variantEntities = await this.ctx.strategyVariantRepo.find({
         where: {
           strategyId: this.strategyId,
         },
@@ -99,7 +93,7 @@ export abstract class StrategyManager<
         (acc, assetId) => {
           return {
             ...acc,
-            [assetId]: this.marketDataService.getCurrentPrice(assetId),
+            [assetId]: this.ctx.marketDataService.getCurrentPrice(assetId),
           };
         },
         {} as Record<CurrencyId, Big>,
