@@ -9,15 +9,15 @@ import { SMA } from 'trading-signals';
 import { takeRight } from 'lodash';
 
 export interface MacParams extends StrategyParams {
-  shortPeriod: number;
-  longPeriod: number;
+  fastPeriod: number;
+  slowPeriod: number;
 }
 
 export class MacStrategy extends Strategy<MacParams> {
-  private readonly shortSma: SMA;
-  private readonly longSma: SMA;
-  private prevShortSmaValue: Big | null = null;
-  private prevLongSmaValue: Big | null = null;
+  private readonly fastSma: SMA;
+  private readonly slowSma: SMA;
+  private prevFastSmaValue: Big | null = null;
+  private prevSlowSmaValue: Big | null = null;
   private positionOpened: boolean = false;
   private crewvityPositionId: string | null = null;
   private isLongPosition: boolean = false;
@@ -26,52 +26,52 @@ export class MacStrategy extends Strategy<MacParams> {
     readonly strategyConstructorParams: StrategyConstructorParams<MacParams>,
   ) {
     super(strategyConstructorParams);
-    this.shortSma = new SMA(this.params.shortPeriod);
-    this.longSma = new SMA(this.params.longPeriod);
+    this.fastSma = new SMA(this.params.fastPeriod);
+    this.slowSma = new SMA(this.params.slowPeriod);
   }
 
   async initialise() {
     const longPeriodRecentRates = await this.marketDataService.getRecentRates(
       this.params.assetIds[0],
-      this.params.longPeriod,
+      this.params.slowPeriod,
     );
 
-    const shortPeriodRecentRates: Big[] = takeRight(
+    const fastPeriodRecentRates: Big[] = takeRight(
       longPeriodRecentRates,
-      this.params.shortPeriod,
+      this.params.fastPeriod,
     );
 
-    this.shortSma.updates(shortPeriodRecentRates);
-    this.longSma.updates(longPeriodRecentRates);
+    this.fastSma.updates(fastPeriodRecentRates);
+    this.slowSma.updates(longPeriodRecentRates);
   }
 
   async onMarketDataUpdate(marketData: Record<CurrencyId, Big>) {
     const latestRate = marketData[this.params.assetIds[0]];
-    this.shortSma.update(latestRate);
-    this.longSma.update(latestRate);
+    this.fastSma.update(latestRate);
+    this.slowSma.update(latestRate);
 
-    const shortSmaValue = this.shortSma.getResult();
-    const longSmaValue = this.longSma.getResult();
+    const fastSmaValue = this.fastSma.getResult();
+    const slowSmaValue = this.slowSma.getResult();
 
-    if (this.prevShortSmaValue && this.prevLongSmaValue) {
-      this.handleCrossing(shortSmaValue, longSmaValue);
+    if (this.prevFastSmaValue && this.prevSlowSmaValue) {
+      this.handleCrossing(fastSmaValue, slowSmaValue);
     }
 
-    this.prevShortSmaValue = shortSmaValue;
-    this.prevLongSmaValue = longSmaValue;
+    this.prevFastSmaValue = fastSmaValue;
+    this.prevSlowSmaValue = slowSmaValue;
   }
 
-  private handleCrossing(shortSmaValue: Big, longSmaValue: Big) {
-    const shortCrossedLongUpward =
-      this.prevShortSmaValue.lt(this.prevLongSmaValue) &&
-      shortSmaValue.gt(longSmaValue);
-    const shortCrossedLongDownward =
-      this.prevShortSmaValue.gt(this.prevLongSmaValue) &&
-      shortSmaValue.lt(longSmaValue);
+  private handleCrossing(fastSmaValue: Big, slowSmaValue: Big) {
+    const fastCrossedSlowUpward =
+      this.prevFastSmaValue.lt(this.prevSlowSmaValue) &&
+      fastSmaValue.gt(slowSmaValue);
+    const fastCrossedSlowDownward =
+      this.prevFastSmaValue.gt(this.prevSlowSmaValue) &&
+      fastSmaValue.lt(slowSmaValue);
 
-    if (shortCrossedLongUpward) {
+    if (fastCrossedSlowUpward) {
       this.handleUpwardCross();
-    } else if (shortCrossedLongDownward) {
+    } else if (fastCrossedSlowDownward) {
       this.handleDownwardCross();
     }
   }

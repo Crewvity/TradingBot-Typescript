@@ -29,8 +29,8 @@ export class AddStrategyCmd extends SafeCommandRunner {
         crewvityStrategyId: crewvityStrategyId_1,
         params: {
           assetIds: [CurrencyId.Bitcoin],
-          shortPeriod: 10,
-          longPeriod: 20,
+          fastPeriod: 10,
+          slowPeriod: 20,
         },
       },
       {
@@ -39,8 +39,8 @@ export class AddStrategyCmd extends SafeCommandRunner {
         crewvityStrategyId: crewvityStrategyId_2,
         params: {
           assetIds: [CurrencyId.Bitcoin],
-          shortPeriod: 20,
-          longPeriod: 40,
+          fastPeriod: 20,
+          slowPeriod: 40,
         },
       },
       {
@@ -49,8 +49,8 @@ export class AddStrategyCmd extends SafeCommandRunner {
         crewvityStrategyId: crewvityStrategyId_3,
         params: {
           assetIds: [CurrencyId.Bitcoin],
-          shortPeriod: 40,
-          longPeriod: 80,
+          fastPeriod: 40,
+          slowPeriod: 80,
         },
       },
     ];
