@@ -53,15 +53,15 @@ export class MacStrategy extends Strategy<MacParams> {
     const fastSmaValue = this.fastSma.getResult();
     const slowSmaValue = this.slowSma.getResult();
 
-    if (this.prevFastSmaValue && this.prevSlowSmaValue) {
-      this.handleCrossing(fastSmaValue, slowSmaValue);
+    if (this.prevFastSmaValue !== null && this.prevSlowSmaValue !== null) {
+      await this.handleCrossing(fastSmaValue, slowSmaValue);
     }
 
     this.prevFastSmaValue = fastSmaValue;
     this.prevSlowSmaValue = slowSmaValue;
   }
 
-  private handleCrossing(fastSmaValue: Big, slowSmaValue: Big) {
+  private async handleCrossing(fastSmaValue: Big, slowSmaValue: Big) {
     const fastCrossedSlowUpward =
       this.prevFastSmaValue.lt(this.prevSlowSmaValue) &&
       fastSmaValue.gt(slowSmaValue);
@@ -69,14 +69,14 @@ export class MacStrategy extends Strategy<MacParams> {
       this.prevFastSmaValue.gt(this.prevSlowSmaValue) &&
       fastSmaValue.lt(slowSmaValue);
 
-    if (fastCrossedSlowUpward) {
-      this.handleUpwardCross();
-    } else if (fastCrossedSlowDownward) {
-      this.handleDownwardCross();
+    if (fastCrossedSlowDownward) {
+      await this.handleDownwardCross();
+    } else if (fastCrossedSlowUpward) {
+      await this.handleUpwardCross();
     }
   }
 
-  private handleUpwardCross() {
+  private async handleUpwardCross() {
     if (!this.positionOpened) {
       this.openPositionImpl(true);
     } else if (!this.isLongPosition) {
@@ -84,11 +84,11 @@ export class MacStrategy extends Strategy<MacParams> {
     }
   }
 
-  private handleDownwardCross() {
+  private async handleDownwardCross() {
     if (!this.positionOpened) {
-      this.openPositionImpl(false);
+      await this.openPositionImpl(false);
     } else if (this.isLongPosition) {
-      this.closePositionImpl();
+      await this.closePositionImpl();
     }
   }
 
