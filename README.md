@@ -22,7 +22,7 @@
 1. Copy all the values from `.env.example` to `.env`
 1. Fill out the missing values in `.env`
     - COINCAP_API_KEY: can be obtained from [Coincap doc](https://docs.coincap.io/)
-    - CREWVITY_API_BASE_URL: can be obtained from "Settings" after logging in from [Crewvity.com](https://crewvity.com)
+    - CREWVITY_API_KEY: can be obtained from "Settings" after logging in from [Crewvity.com](https://crewvity.com)
 
 ## Setting up example strategies
 We need to link the strategy variants defined in this trading bot with the strategies that are registered in [Crewvity](https://crewvity.com).
