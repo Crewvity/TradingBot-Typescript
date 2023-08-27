@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import Big from 'big.js';
 import { OnEvent } from '@nestjs/event-emitter';
-import { CurrencyId, PositionSize, StrategyId } from 'src/commons/constants';
+import { CurrencyId, StrategyId } from 'src/commons/constants';
 import { Topic } from 'src/commons/events/topics';
 import { Strategy, StrategyParams } from 'src/strategy/strategies/strategy';
 import { StrategyVariantEntity } from 'src/database/entities/strategy-variant.entity';

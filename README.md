@@ -24,19 +24,19 @@
     - COINCAP_API_KEY: can be obtained from [Coincap doc](https://docs.coincap.io/)
     - CREWVITY_API_BASE_URL: can be obtained from "Settings" after logging in from [Crewvity.com](https://crewvity.com)
 
-## Strategies Setup
-- For every strategy in [Crewvity](https://crewvity.com), you need to add a strategy variant in your DB.
-- For example, [add-strategy.ts](src/cli-command/strategy/add-strategy.ts) is a [NestJS Commander](https://docs.nestjs.com/recipes/nest-commander) script that can be run by `yarn cmd add-strategy` in terminal from the root folder.
-- Please follow the steps below to add `Moving Average Cross` strategy variants to your DB and run them.
+## Setting up example strategies
+We need to link the strategy variants defined in this trading bot with the strategies that are registered in [Crewvity](https://crewvity.com).
 
 1. Login to [Crewvity](https://crewvity.com)
 1. Add three strategies with below names and get their strategy IDs
-    - MAC-fast-cross
-    - MAC-medium-cross
-    - MAC-slow-cross
+    - MacCross-BTC-Fast
+    - MacCross-BTC-Medium
+    - MacCross-BTC-Slow
 1. Paste the crewvity strategy IDs into [add-strategy.ts](src/cli-command/strategy/add-strategy.ts)
-1. Run the script with `yarn cmd add-strategy`
+1. Run the script with `yarn cmd add-strategy` from the root folder
 1. Run the server `yarn start:dev` and strategies should initialise and start running automatically
+
+[add-strategy.ts](src/cli-command/strategy/add-strategy.ts) script here is a [NestJS Commander](https://docs.nestjs.com/recipes/nest-commander) script.
 
 ## Modules
 Entire codebase is organised by [NestJS Modules](https://docs.nestjs.com/modules), each responsible for a specific domain.
