@@ -5,10 +5,18 @@ import { MarketDataModule } from 'src/market-data/market-data.module';
 import { StrategyAdminService } from 'src/strategy/services/strategy-admin.service';
 import { CrewvityModule } from 'src/crewvity/crewvity.module';
 import { StrategyManagerContext } from './strategies/strategy-manager-context';
+import { MacAltStrategyManager } from './strategies/mac-alt/mac-alt-manager';
 
 @Module({
   imports: [DatabaseMoodule, MarketDataModule, CrewvityModule],
-  providers: [MacStrategyManager, StrategyAdminService, StrategyManagerContext],
+  providers: [
+    StrategyAdminService,
+    StrategyManagerContext,
+
+    // strategy managers
+    MacStrategyManager,
+    MacAltStrategyManager,
+  ],
   exports: [StrategyAdminService],
 })
 export class StrategyModule {}

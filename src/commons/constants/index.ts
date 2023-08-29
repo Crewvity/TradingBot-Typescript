@@ -78,4 +78,5 @@ export enum TradeDirection {
 
 export enum StrategyId {
   MovingAverageCross = 'moving-average-cross',
+  MovingAverageCrossAlternate = 'moving-average-cross-alternate',
 }

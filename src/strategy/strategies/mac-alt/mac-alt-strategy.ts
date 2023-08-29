@@ -8,16 +8,15 @@ import {
 import { SMA } from 'trading-signals';
 import { takeRight } from 'lodash';
 
-export interface MacParams extends StrategyParams {
+export interface MacAltParams extends StrategyParams {
   fastPeriod: number;
   slowPeriod: number;
 }
 
 /**
- * Below MAC strategy only opens uni-directional positions based on the first position opened.
- * This is because every other cross opens a position, so it's always the same direction.
+ * Similar to the plain MAC strategy except that it opens positions in alternating directions.
  */
-export class MacStrategy extends Strategy<MacParams> {
+export class MacAltStrategy extends Strategy<MacAltParams> {
   private readonly fastSma: SMA;
   private readonly slowSma: SMA;
   private prevFastSmaValue: Big | null = null;
@@ -25,9 +24,10 @@ export class MacStrategy extends Strategy<MacParams> {
   private positionOpened: boolean = false;
   private crewvityPositionId: string | null = null;
   private isLongPosition: boolean = false;
+  private ignoreNextCross: boolean = false;
 
   constructor(
-    readonly strategyConstructorParams: StrategyConstructorParams<MacParams>,
+    readonly strategyConstructorParams: StrategyConstructorParams<MacAltParams>,
   ) {
     super(strategyConstructorParams);
     this.fastSma = new SMA(this.params.fastPeriod);
@@ -73,6 +73,14 @@ export class MacStrategy extends Strategy<MacParams> {
       this.prevFastSmaValue.gt(this.prevSlowSmaValue) &&
       fastSmaValue.lt(slowSmaValue);
 
+    if (
+      (fastCrossedSlowUpward || fastCrossedSlowDownward) &&
+      this.ignoreNextCross
+    ) {
+      this.ignoreNextCross = false;
+      return;
+    }
+
     if (fastCrossedSlowDownward) {
       await this.handleDownwardCross();
     } else if (fastCrossedSlowUpward) {
@@ -85,6 +93,7 @@ export class MacStrategy extends Strategy<MacParams> {
       await this.openPositionImpl(true);
     } else if (!this.isLongPosition) {
       await this.closePositionImpl();
+      this.ignoreNextCross = true;
     }
   }
 
@@ -93,6 +102,7 @@ export class MacStrategy extends Strategy<MacParams> {
       await this.openPositionImpl(false);
     } else if (this.isLongPosition) {
       await this.closePositionImpl();
+      this.ignoreNextCross = true;
     }
   }
 
