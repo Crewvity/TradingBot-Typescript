@@ -1,4 +1,5 @@
 import Big from 'big.js';
+import { takeRight } from 'lodash';
 import { CurrencyId, PositionSize } from 'src/commons/constants';
 import {
   Strategy,
@@ -6,7 +7,6 @@ import {
   StrategyParams,
 } from 'src/strategy/strategies/strategy';
 import { SMA } from 'trading-signals';
-import { takeRight } from 'lodash';
 
 export interface MacParams extends StrategyParams {
   fastPeriod: number;

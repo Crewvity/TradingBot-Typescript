@@ -1,16 +1,18 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Catch, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CoincapService } from 'src/market-data/services/coincap.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import Big from 'big.js';
 import {
   CandleInterval,
   CurrencyId,
   CurrencySymbol,
 } from 'src/commons/constants';
-import { deepFreeze } from 'src/commons/utils';
+import { CatchErrors } from 'src/commons/error-handlers/catch-errors-decorator';
 import { Topic } from 'src/commons/events/topics';
-import Big from 'big.js';
+import { deepFreeze } from 'src/commons/utils';
+import { CoincapService } from 'src/market-data/services/coincap.service';
 
+@Catch()
 @Injectable()
 export class MarketDataService implements OnModuleInit {
   private readonly logger = new Logger(MarketDataService.name);
@@ -30,16 +32,14 @@ export class MarketDataService implements OnModuleInit {
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
+  @CatchErrors()
   async publishCryptoRates() {
     if (process.env.CLI) return;
 
-    try {
-      this.logger.log('Refreshing crypto rates');
-      await this.refreshCryptoRates();
-      this.logger.log('Refreshed crypto rates');
-    } catch (error) {
-      this.logger.error('Failed to refresh crypto rates', error);
-    }
+    this.logger.log('Refreshing crypto rates');
+    await this.refreshCryptoRates();
+    this.logger.log('Refreshed crypto rates');
+
     this.eventEmitter.emit(Topic.MarketData.Updated);
     this.logger.log(`Emitted ${Topic.MarketData.Updated} event`);
   }
